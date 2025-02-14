@@ -47,3 +47,14 @@ If your plugin does not need CSS, delete this file.
         background-color: transparent;
     }
 }
+
+.cm-temp-highlight {
+  background-color: #ffeb3b55;
+  animation: pulse 2s ease-out;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255,235,59,0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255,235,59,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,235,59,0); }
+}
