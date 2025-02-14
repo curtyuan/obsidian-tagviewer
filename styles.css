@@ -49,12 +49,22 @@ If your plugin does not need CSS, delete this file.
 }
 
 .cm-temp-highlight {
-  background-color: #ffeb3b55;
-  animation: pulse 2s ease-out;
+    background-color: var(--text-highlight-bg) !important;
+    animation: pulse 2s ease-out;
+    transition: background-color 0.3s ease;
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(255,235,59,0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(255,235,59,0); }
-  100% { box-shadow: 0 0 0 0 rgba(255,235,59,0); }
+    0% { 
+        background-color: var(--text-highlight-bg);
+        box-shadow: 0 0 0 0 rgba(var(--text-highlight-bg-rgb), 0.7);
+    }
+    70% { 
+        background-color: rgba(var(--text-highlight-bg-rgb), 0.5);
+        box-shadow: 0 0 0 10px rgba(var(--text-highlight-bg-rgb), 0);
+    }
+    100% { 
+        background-color: transparent;
+        box-shadow: 0 0 0 0 rgba(var(--text-highlight-bg-rgb), 0);
+    }
 }

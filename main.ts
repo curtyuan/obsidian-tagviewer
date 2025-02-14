@@ -1,35 +1,61 @@
 import { Plugin, MarkdownPostProcessorContext, MarkdownView, TFile } from 'obsidian';
-import { Decoration, EditorView } from "@codemirror/view";
+import { Decoration, EditorView, DecorationSet, RangeSet } from "@codemirror/view";
 import { StateField, StateEffect } from "@codemirror/state";
 
+// Define the effect at module level
+const highlightEffect = StateEffect.define<{ from: number, to: number } | null>();
+
+// Define the theme (minimal configuration)
+const highlightTheme = EditorView.baseTheme({
+	"&.cm-editor .cm-temp-highlight": {
+		// Only define the class, actual styles come from styles.css
+	}
+});
+
 export default class TagViewerPlugin extends Plugin {
-	private highlightEffect: any;
-	private highlightField: any;
+	private highlightField: StateField<DecorationSet>;
 
 	async onload() {
 		// Register code block processor
 		this.registerMarkdownCodeBlockProcessor("tagview", this.processTagViewCodeBlock.bind(this));
 		
-		// Initialize highlight effect and field
-		this.highlightEffect = StateEffect.define<{ from: number, to: number }>();
+		// Define the state field
 		this.highlightField = StateField.define<DecorationSet>({
-			create: () => Decoration.none(),
-			update: (deco, tr) => {
-				deco = deco.map(tr.changes);
-				for (let e of tr.effects) {
-					if (e.is(this.highlightEffect)) {
-						const mark = Decoration.mark({
+			create() {
+				return Decoration.none;
+			},
+			update: (decorations, transaction) => {
+				// Map existing decorations through changes
+				decorations = decorations.map(transaction.changes);
+
+				for (let effect of transaction.effects) {
+					if (effect.is(highlightEffect)) {
+						if (effect.value === null) {
+							return Decoration.none;
+						}
+						
+						// Create the decoration
+						const decoration = Decoration.mark({
 							class: "cm-temp-highlight"
 						});
-						deco = deco.update({
-							add: [mark.range(e.value.from, e.value.to)]
-						});
+						
+						// Create a proper decoration set
+						return Decoration.set([
+							decoration.range(effect.value.from, effect.value.to)
+						]);
 					}
 				}
-				return deco;
+				
+				return decorations;
 			},
-			provide: f => EditorView.decorations.from(f)
+			provide: field => EditorView.decorations.from(field)
 		});
+
+		// Register both the state field and theme
+		this.registerEditorExtension([
+			this.highlightField,
+			highlightTheme
+		]);
 	}
 
 	async processTagViewCodeBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) {
@@ -70,6 +96,10 @@ export default class TagViewerPlugin extends Plugin {
 			// Get the editor view
 			const editorView = (editor as any).cm as EditorView;
 			
+			if (!editorView) {
+				return;
+			}
+
 			// Get line positions
 			const line = editorView.state.doc.line(lineNumber);
 			
@@ -81,23 +111,26 @@ export default class TagViewerPlugin extends Plugin {
 				margin
 			);
 
-			// Apply highlight effect
-			editorView.dispatch({
-				effects: this.highlightEffect.of({
-					from: line.from,
-					to: line.to
-				})
-			});
-
-			// Remove highlight after 2 seconds
-			setTimeout(() => {
+			try {
+				// Create and dispatch the highlight effect
 				editorView.dispatch({
-					effects: this.highlightEffect.of({
+					effects: highlightEffect.of({
 						from: line.from,
 						to: line.to
-					}).map(() => [])
+					})
 				});
-			}, 2000);
+
+				// Remove highlight after 2 seconds
+				setTimeout(() => {
+					if (editorView.state) {
+						editorView.dispatch({
+							effects: highlightEffect.of(null)
+						});
+					}
+				}, 2000);
+			} catch (error) {
+				console.error("Error applying highlight:", error);
+			}
 		}
 	}
 }
