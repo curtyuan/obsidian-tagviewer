@@ -1,0 +1,49 @@
+/*
+
+This CSS file will be included with your plugin, and
+available in the app when your plugin is enabled.
+
+If your plugin does not need CSS, delete this file.
+
+*/
+
+.tag-viewer-table {
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.tag-viewer-table th,
+.tag-viewer-table td {
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+.tag-viewer-table .match-line {
+    text-align: center;
+}
+
+.tag-viewer-table .tag-row th,
+.tag-viewer-table .tag-row td {
+    background-color: #1e3a8a;
+    color: white;
+    font-weight: bold;
+    border: 2px solid #1e3a8a;
+}
+
+.tag-viewer-table .content-row td {
+    border-top: none;
+}
+
+.tag-highlight-line {
+    background-color: var(--text-highlight-bg) !important;
+    animation: fadeHighlight 4s ease-out forwards;
+}
+
+@keyframes fadeHighlight {
+    0%, 50% {
+        background-color: var(--text-highlight-bg);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
