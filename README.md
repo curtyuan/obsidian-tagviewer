@@ -39,3 +39,7 @@ To start developing:
 3. Run `npm run dev` to start compilation in watch mode
 4. Make changes to the `.ts` files
 5. Reload Obsidian to see your changes take effect
+
+
+
+![alt text](screenshot/tagview.gif)
